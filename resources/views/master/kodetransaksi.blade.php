@@ -1,50 +1,25 @@
 @extends('layouts.master')
-@php
-    $modalsize = 'modal-lg';
-@endphp
 @push('formbody')
 <form id="form">
     <input type="hidden" id="input-id" name="input-id">
     <input type="hidden" id="input-action" name="input-action">
-    <div class="form-row mb-1">
-        <label class="col-form-label col-md-3" for="input-kode">Kode</label>
-        <div class="col-md-9 mb-1">
-            <input type="text" id="input-kode" name="input-kode" class="form-control">
-        </div>
+    <div class="mb-1">
+        <label for="input-kode">Kode</label>
+        <input type="text" maxlength="10" id="input-kode" name="input-kode" class="form-control">
     </div>
-    <div class="form-row mb-1">
-        <label class="col-form-label col-md-3" for="input-nama">Nama Pembeli</label>
-        <div class="col-md-9 mb-1">
-            <input type="text" id="input-nama" name="input-nama" class="form-control">
-        </div>
-    </div>
-    <div class="form-row mb-1">
-        <label class="col-form-label col-md-3" for="input-ktpnpwp">No. KTP / NPWP</label>
-        <div class="col-md-9 mb-1">
-            <input type="text" id="input-ktpnpwp" name="input-ktpnpwp" class="form-control">
-        </div>
-    </div>
-    <div class="form-row mb-1">
-        <label class="col-form-label col-md-3" for="input-alamat">Alamat</label>
-        <div class="col-md-9 mb-1">
-            <textarea id="input-alamat" name="input-alamat" class="form-control"></textarea>
-        </div>
-    </div>
-    <div class="form-row mb-1">
-        <label class="col-form-label col-md-3" for="input-keterangan">Keterangan</label>
-        <div class="col-md-9 mb-1">
-            <textarea id="input-keterangan" name="input-keterangan" class="form-control"></textarea>
-        </div>
+    <div class="mb-1">
+        <label for="input-uraian">Uraian Transaksi</label>
+        <input type="text" maxlength="99" id="input-uraian" name="input-uraian" class="form-control">
     </div>
 </form>
 @endpush
 @push('scripts_end')
     <script>
         $(function(){
-                var table = $("#grid").DataTable({
+            var table = $("#grid").DataTable({
                 "processing": false,
                 "serverSide": true,
-                "ajax": "/master/getdata_pembeli",
+                "ajax": "/master/getdata_kodetransaksi",
                 "paging": false,
                 dom: 'Bfrtip',        // element order: NEEDS BUTTON CONTAINER (B) ****
                 select: 'single',     // enable single row selection
@@ -69,14 +44,11 @@
                         "data": "KODE"
                     }, {
                         "target": 1,
-                        "data": "NAMA"
-                    }, {
-                        "target": 2,
-                        "data": "ALAMAT"
+                        "data": "URAIAN"
                     }],
                 rowCallback: function(row, data)
                 {
-                    $(row).attr("row-id", data.ID);
+                    $(row).attr("row-id", data.KODETRANSAKSI_ID);
                 },
                 buttons: [{
                 text: 'Tambah',
@@ -84,10 +56,7 @@
                 action: function () {
                     $("#modalform .modal-title").html("Tambah Data");
                     $("#input-kode").val("");
-                    $("#input-nama").val("");
-                    $("#input-alamat").val("");
-                    $("#input-keterangan").val("");
-                    $("#input-ktpnpwp").val("");
+                    $("#input-uraian").val("");
                     $("#input-action").val("add");
                     $("#modalform").modal("show");
                     $("#modalform input").eq(0).focus();
@@ -100,13 +69,10 @@
                 action: function (e, dt) {
                     var row = dt.rows( { selected: true } ).data();
                     $("#modalform .modal-title").html("Edit Data");
-                    $("#input-kode").val(row[0].KODE);
-                    $("#input-nama").val(row[0].NAMA);
-                    $("#input-keterangan").val(row[0].KETERANGAN);
-                    $("#input-alamat").val(row[0].ALAMAT);
-                    $("#input-ktpnpwp").val(row[0].KTPNPWP);
+                    $("#input-kode").val(row[0].kode);
+                    $("#input-uraian").val(row[0].uraian);
                     $("#input-action").val("edit");
-                    $("#input-id").val(row[0].ID);
+                    $("#input-id").val(row[0].KODETRANSAKSI_ID);
                     $("#modalform").modal("show");
                 }
                 },
@@ -122,7 +88,7 @@
                         var row = dt.rows( { selected: true } ).data();
                         $.ajax({
                             url: "/master/crud",
-                            data: {_token: "{{ csrf_token() }}", action: "pembeli", input: $.param({"input-action": "delete", "id": row[0].ID})},
+                            data: {_token: "{{ csrf_token() }}", action: "kodetransaksi", input: $.param({"input-action": "delete", "id": row[0].KODETRANSAKSI_ID})},
                             type: "POST",
                             success: function(msg) {
                                 $("#modal .btn-ok").addClass("d-none");
@@ -154,7 +120,7 @@
                 $(".loader").show()
                 $.ajax({
                     url: "/master/crud",
-                    data: {_token: "{{ csrf_token() }}", action: "pembeli", input: $("#form").serialize()},
+                    data: {_token: "{{ csrf_token() }}", action: "kodetransaksi", input: $("#form").serialize()},
                     type: "POST",
                     success: function(msg) {
                         if (typeof msg.error != 'undefined'){
@@ -171,10 +137,7 @@
                             }
                             else {
                                 $("#input-kode").val("");
-                                $("#input-nama").val("");
-                                $("#input-alamat").val("");
-                                $("#input-keterangan").val("");
-                                $("#input-ktpnpwp").val("");
+                                $("#input-uraian").val("");
                                 $("#input-kode").focus();
                             }
                             table.ajax.reload();
@@ -192,6 +155,5 @@
                 });
             });
         })
-
     </script>
 @endpush

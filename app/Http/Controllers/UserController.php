@@ -145,13 +145,6 @@ class UserController extends Controller {
 	public function edit($id)
 	{
 		$data = User::where("id", $id)->first();
-		$userCompanies = DB::table("user_has_companies")
-							->select("company_id")
-							->where("user_id", $id)->get();
-		$arrCompany = [];
-		foreach($userCompanies as $uc){
-			$arrCompany[] = $uc->company_id;
-		}
 		//$companies = Companies::get();
 		$roles = Role::select("name")->get();
 		$userRoles = DB::table("model_has_roles")
@@ -164,7 +157,7 @@ class UserController extends Controller {
 			$arrRoles[] = $ur->name;
 		}
 		return view('admin.users.form', ["data" => $data, /*"companies" => $companies,*/
-								   "userCompanies" => $arrCompany, "userRoles" => $arrRoles,
+								   "userRoles" => $arrRoles,
 								   "roles" => $roles, "action" => "edit"]);
 	}
 

@@ -1,15 +1,15 @@
 @extends('layouts.master')
 @push('formbody')
-<form id="form">                    
+<form id="form">
     <input type="hidden" id="input-id" name="input-id">
     <input type="hidden" id="input-action" name="input-action">
-    <div class="mb-1">                        
+    <div class="mb-1">
         <label for="input-kode">Kode</label>
-        <input type="text" maxlength="10" id="input-kode" name="input-kode" class="form-control">                        
+        <input type="text" maxlength="10" id="input-kode" name="input-kode" class="form-control">
     </div>
-    <div class="mb-1">                        
+    <div class="mb-1">
         <label for="input-satuan">Satuan</label>
-        <input type="text" maxlength="99" id="input-satuan" name="input-satuan" class="form-control">                        
+        <input type="text" maxlength="99" id="input-satuan" name="input-satuan" class="form-control">
     </div>
 </form>
 @endpush
@@ -25,7 +25,7 @@
                 select: 'single',     // enable single row selection
                 responsive: true,     // enable responsiveness,
                 rowId: 0,
-                "language": 
+                "language":
                     {
                         "lengthMenu": "Menampilkan _MENU_ record per halaman",
                         "info": "",
@@ -67,7 +67,7 @@
                 text: 'Edit',
                 name: 'edit',        // DO NOT change name
                 action: function (e, dt) {
-                    var row = dt.rows( { selected: true } ).data();           
+                    var row = dt.rows( { selected: true } ).data();
                     $("#modalform .modal-title").html("Edit Data");
                     $("#input-kode").val(row[0].kode);
                     $("#input-satuan").val(row[0].satuan);
@@ -83,7 +83,7 @@
                 action: function (e, dt){
                     $("#modal .btn-ok").removeClass("d-none");
                     $("#modal .btn-close").html("Batal");
-                    $("#modal .modal-body").html("Apakah Anda ingin menghapus data ini?");        
+                    $("#modal .modal-body").html("Apakah Anda ingin menghapus data ini?");
                     $("#modal .btn-ok").html("Ya").on("click", function(){
                         var row = dt.rows( { selected: true } ).data();
                         $.ajax({
@@ -104,9 +104,9 @@
                                 }, 5000);
                             }
                         })
-                    });                        
+                    });
                     $("#modal").modal("show").on("hidden.bs.modal", function(){
-                        $("#modal .btn-ok").off("click");            
+                        $("#modal .btn-ok").off("click");
                         $("#modal .btn-close").html("Tutup");
                     })
                 }
@@ -134,7 +134,7 @@
                         else {
                             if ($("#input-action").val() != "add"){
                                 $("#modalform").modal("hide");
-                            }            
+                            }
                             else {
                                 $("#input-kode").val("");
                                 $("#input-satuan").val("");
@@ -145,7 +145,7 @@
                             $("#modal").modal("show");
                             setTimeout(function(){
                                 $("#modal").modal("hide");
-                            }, 1000);  
+                            }, 1000);
                         }
                     },
                     complete: function(){

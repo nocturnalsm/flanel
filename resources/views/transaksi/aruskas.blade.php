@@ -2,12 +2,12 @@
 @section('main')
 <div class="card">
     <div class="card-header">
-        Browse Job Order
+        Browse Arus Kas
     </div>
     <div class="card-body">
         <div class="row">
             <div class="col-md-10">
-                <form id="form" method="POST" action="/transaksi/browse?filter=1&export=1">
+                <form id="form" method="POST" action="/transaksi/aruskas?filter=1&export=1">
                     @csrf
                     <div class="row">
                         <label class="col-md-2">Customer</label>
@@ -70,17 +70,13 @@
                 <table width="100%" id="grid" class="table">
                     <thead>
                         <th>Opsi</th>
-                        <th>Job Order</th>
-                        <th>No Dok</th>
+                        <th>No Job</th>
                         <th>Tgl Job</th>
-                        <th>Customer</th>
-                        <th>Tgl Tiba</th>
-                        <th>No Aju</th>
-                        <th>Nopen<br>Tgl Nopen</th>
-                        <th>Tgl SPPB</th>
-                        <th>Tot Biaya</th>
-                        <th>Tot Billing</th>
-                        <th>Tot Payment</th>
+                        <th>No Dok</th>
+                        <th>Tgl Trans</th>
+                        <th>Kd Trans</th>
+                        <th>Nominal</th>
+                        <th>D/K</th>
                     </thead>
                     <tbody></tbody>
                 </table>
@@ -108,15 +104,12 @@
         			j = (j = i.length) > 3 ? j % 3 : 0;
         	return symbol + negative + (j ? i.substr(0, j) + thousand : "") + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + thousand) + (places ? decimal + Math.abs(number - i).toFixed(places).slice(2) : "");
         };
-        var columns = [{target: 0, data: null, orderable: false}, {target: 1, data: "JOB_ORDER"}, {target: 2, data: "NO_DOK"},
-        {target: 3, data: "TGL_JOB"}, {target: 4, data: "NAMACUSTOMER"},
-        {target: 5, data: "TGL_TIBA"},
-        {target: 6, data: "NOAJU"},
-        {target: 7, data: "NOPEN"},
-        {target: 8, data: "TGL_SPPB"},
-        {target: 9, data: "TOTAL_BIAYA"},
-        {target: 10, data: "TOTAL_BILLING"},
-        {target: 11, data: "TOTAL_PAYMENT"}
+        var columns = [{target: 0, data: null, orderable: false}, {target: 1, data: "JOB_ORDER"},
+        {target: 2, data: "TGL_JOB"}, {target: 3, data: "NO_DOK"},
+        {target: 4, data: "TANGGAL"},
+        {target: 5, data: "TRANSAKSI"},
+        {target: 6, data: "NOMINAL"},
+        {target: 7, data: "DK"}
         ];
 
         var grid = $("#grid").DataTable({responsive: false,
@@ -139,11 +132,8 @@
             rowCallback: function(row, data)
             {
                 $(row).attr("id-transaksi", data[0]);
-                $('td:eq(0)', row).html('<a title="Edit" href="/transaksi/' + data.ID + '"><i class="fa fa-edit"></i></a>');
-                $("td:eq(7)", row).html(data.NOPEN + '<br>' + data.TGL_NOPEN);
-                $("td:eq(9)", row).html(parseFloat(data.TOTAL_BIAYA).formatMoney(2));
-                $("td:eq(10)", row).html(parseFloat(data.TOTAL_BILLING).formatMoney(2));
-                $("td:eq(11)", row).html(parseFloat(data.TOTAL_PAYMENT).formatMoney(2));
+                $('td:eq(0)', row).html('<a title="Edit" href="/transaksi/pembayaran/' + data.ID + '"><i class="fa fa-edit"></i></a>');
+                $("td:eq(6)", row).html(parseFloat(data.NOMINAL).formatMoney(2));
             },
             columnDefs: [
                 { "orderable": false, "targets": 0 }
@@ -152,7 +142,7 @@
         $("#preview").on("click", function(){
             $.ajax({
             method: "POST",
-            url: "/transaksi/browse?filter=1",
+            url: "/transaksi/aruskas?filter=1",
             data: $("#form").serialize(),
             success: function(msg){
                     grid.clear().rows.add(msg);

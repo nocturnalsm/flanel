@@ -35,16 +35,8 @@ Route::group(['middleware' => ['auth']], function () {
       $controller = app()->make('App\Http\Controllers\TransaksiController');
       if (ctype_digit($action) || trim($action == "")){
           $id = $action;
-          $action = "schedule";
+          $action = "rekamData";
       }
       return $controller->callAction($action,[request(), $id]);
   });
-	Route::any('gudang/{action?}/{id?}', function ($action, $id = ""){
-			$controller = app()->make('App\Http\Controllers\GudangController');
-			if (ctype_digit($action) || trim($action == "")){
-					$id = $action;
-					$action = "rekamData";
-			}
-			return $controller->callAction($action,[request(), $id]);
-	});
 });

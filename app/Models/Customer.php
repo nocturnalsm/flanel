@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Customer extends Model
 {
-    protected $table  = 'plbbandu_app15.tb_customer';
+    protected $table  = 'tb_customer';
     protected $primaryKey = 'id_customer';
     protected $guarded = ['id_customer'];
     public $timestamps = false;
