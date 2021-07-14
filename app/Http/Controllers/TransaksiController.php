@@ -141,7 +141,7 @@ class TransaksiController extends Controller {
 			$customer = Customer::select("id_customer","nama_customer")->get();
 			return view("transaksi.browse",["breads" => $breadcrumb,
 										"datacustomer" => $customer,
-										"datakategori1" => Array("No Job","No Dok"),
+										"datakategori1" => Array("No Job"),
 										"datakategori2" => Array("Tanggal Job","Tanggal Tiba")
 										]);
 		}

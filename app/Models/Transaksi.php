@@ -48,7 +48,7 @@ class Transaksi extends Model
             $header = $header->first();
             $header->TOTAL_BELI = $totalBeli;
             $header->TOTAL_JUAL = $totalJual;
-            $header->PROFIT = $totalBeli - $totalJual;
+            $header->PROFIT = $totalJual - $totalBeli;
             $header->TOTAL_KREDIT = $totalKredit;
             $header->TOTAL_DEBET = $totalDebet;
             $header->SALDO = $totalDebet - $totalKredit;
@@ -61,11 +61,23 @@ class Transaksi extends Model
                         })
                         ->where("pd.ID_HEADER", $id)->get();
             $detailJual = DB::table(DB::raw("penjualan_detail pd"))
-                            ->select("pd.*", "pb.nama_customer", "pb.alamat_customer", DB::raw("jd.URAIAN AS JENISDOKUMEN"))
+                            ->select("pd.*", "pb.nama_customer", "pb.alamat_customer",
+                                     DB::raw("jd.URAIAN AS JENISDOKUMEN"),
+                                     DB::raw("IFNULL(totalbayar.TOTAL,0) AS TOTAL_PAYMENT"))
                             ->leftJoin(DB::raw("ref_jenis_dokumen jd"), "pd.JENISDOKUMEN_ID","=","jd.JENISDOKUMEN_ID")
                             ->leftJoin(DB::raw("tb_customer pb"), function($join){
                                 $join->on("pb.id_customer","=","pd.PEMBELI_ID");
                             })
+                            ->leftJoinSub(
+                                DB::table(DB::raw("pembayaran_detail pd"))
+                                  ->join(DB::raw("pembayaran p"), "pd.ID_HEADER","=","p.ID")
+                                  ->where(DB::raw("NO_INV_ID IS NOT NULL AND NO_INV_ID <> ''"))
+                                  ->select("NO_INV_ID", DB::raw("SUM(NOMINAL) AS TOTAL"))
+                                  ->groupBy("NO_INV_ID"),
+                                'totalbayar', function($join){
+                                    $join->on("pd.ID","=","totalbayar.NO_INV_ID");
+                                }
+                             )
                             ->where("pd.ID_HEADER", $id)->get();
         }
         $header->TGL_JOB = $header->TGL_JOB == "" ? "" : Date("d-m-Y", strtotime($header->TGL_JOB));
@@ -221,7 +233,7 @@ class Transaksi extends Model
     }
     public static function browse($customer, $kategori1, $isikategori1, $kategori2, $dari2, $sampai2)
     {
-        $array1 = Array("No Job" => "JOB_ORDER", "No Dok" => "NO_DOK");
+        $array1 = Array("No Job" => "JOB_ORDER");
         $array2 = Array("Tanggal Tiba" => "TGL_TIBA",
                         "Tanggal Job" => "TGL_JOB");
         $where = " 1 = 1";
@@ -249,29 +261,50 @@ class Transaksi extends Model
                                             AND '" .Date("Y-m-d", strtotime($sampai2)) ."')";
             }
         }
-        if (trim($customer) != ""){
-            $where .= " AND CUSTOMER = '" .$customer ."'";
-        }
+
+        $totalJual = DB::table("penjualan_detail")
+                       ->select("ID_HEADER",DB::raw("SUM(QTY*HARGA) AS TOTALJUAL"))
+                       ->groupBy("ID_HEADER");
+
+        $totalBeli = DB::table("pembelian_detail")
+                      ->select("ID_HEADER",DB::raw("SUM(NOMINAL) AS TOTALBELI"))
+                      ->groupBy("ID_HEADER");
+
+        $totalDebet = DB::table("pembayaran_detail")
+                        ->where("DK", "D")
+                        ->select("JOB_ORDER_ID", DB::raw("SUM(NOMINAL) AS TOTALDEBET"))
+                        ->groupBy("JOB_ORDER_ID");
+
+        $totalKredit = DB::table("pembayaran_detail")
+                        ->where("DK", "K")
+                        ->select("JOB_ORDER_ID", DB::raw("SUM(NOMINAL) AS TOTALKREDIT"))
+                        ->groupBy("JOB_ORDER_ID");
 
         $data = DB::table(DB::raw("job_order h"))
-                    ->selectRaw("h.ID, NOAJU, NOPEN, JOB_ORDER, NO_DOK,"
-                            ."i.nama_customer AS NAMACUSTOMER, "
-                            ."(SELECT IFNULL(SUM(NOMINAL+PPN),0) FROM job_order_detail jd "
-                            ."WHERE jd.ID_HEADER = h.ID) AS TOTAL_BILLING, "
-                            ."(SELECT IFNULL(SUM(NOMINAL),0) FROM pembayaran_detail pd "
-                            ."INNER JOIN pembayaran p ON pd.ID_HEADER = p.ID "
-                            ."WHERE pd.JOB_ORDER_ID = h.ID AND DK = 'D') AS TOTAL_BIAYA, "
-                            ."(SELECT IFNULL(SUM(NOMINAL),0) FROM pembayaran_detail pd "
-                            ."INNER JOIN pembayaran p ON pd.ID_HEADER = p.ID "
-                            ."WHERE pd.JOB_ORDER_ID = h.ID AND DK = 'K') AS TOTAL_PAYMENT,"
+                    ->selectRaw("h.ID, JOB_ORDER, TOTAL_MODAL,"
+                            ."IFNULL(TOTALBELI,0) AS TOTAL_BELI, "
+                            ."IFNULL(TOTALJUAL,0) AS TOTAL_JUAL, "
+                            ."IFNULL(TOTALJUAL,0) - IFNULL(TOTALBELI,0) AS PROFIT, "
+                            ."IFNULL(TOTALDEBET,0) AS TOTAL_DEBET, "
+                            ."IFNULL(TOTALKREDIT,0) AS TOTAL_KREDIT, "
+                            ."IFNULL(TOTALDEBET,0) - IFNULL(TOTALKREDIT,0) AS SALDO, "
                             ."IFNULL(DATE_FORMAT(TGL_TIBA, '%d-%m-%Y'),'') AS TGL_TIBA,"
-                            ."IFNULL(DATE_FORMAT(TGL_SPPB, '%d-%m-%Y'),'') AS TGL_SPPB,"
-                            ."IFNULL(DATE_FORMAT(TGL_JOB, '%d-%m-%Y'), '') AS TGL_JOB,"
-                            ."IFNULL(DATE_FORMAT(TGL_NOPEN, '%d-%m-%Y'),'') AS TGL_NOPEN")
-                    ->join(DB::raw("tb_customer i"), "h.CUSTOMER", "=", "i.id_customer")
+                            ."IFNULL(DATE_FORMAT(TGL_JOB, '%d-%m-%Y'), '') AS TGL_JOB")
+                    ->leftJoinSub($totalJual, "totjual", "totjual.ID_HEADER","=","h.ID")
+                    ->leftJoinSub($totalBeli, "totbeli", "totbeli.ID_HEADER","=","h.ID")
+                    ->leftJoinSub($totalDebet, "totdebet", "totdebet.JOB_ORDER_ID","=","h.ID")
+                    ->leftJoinSub($totalKredit, "totkredit", "totkredit.JOB_ORDER_ID","=","h.ID")
                     ->orderBy("JOB_ORDER");
         if (trim($where) != ""){
             $data = $data->whereRaw($where);
+        }
+        if (trim($customer) != ""){
+            $data = $data->whereExists(function($query) use ($customer){
+                $query->select("pd.ID_HEADER")
+                      ->from(DB::raw("penjualan_detail pd"))
+                      ->whereRaw("h.ID = pd.ID_HEADER")
+                      ->where(DB::raw("pd.PEMBELI_ID"), trim($customer));
+            });
         }
         return $data->get();
     }

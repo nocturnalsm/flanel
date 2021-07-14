@@ -111,7 +111,7 @@
                     </div>
                     <div class="form-row mb-1">
                         <label class="col-form-label col-md-3">Alamat</label>
-                        <div class="col-md-9">
+                        <div class="col-md-9 mt-2">
                             <span id="alamatcustomer"></span>
                         </div>
                     </div>
@@ -623,10 +623,11 @@ $("#savedetailbeli").on("click", function(){
     var act = $("#formbeli").attr("act");
     if (act == "add"){
         tabelbeli.row.add({NAMA_BARANG: namabarang, SATUAN_ID: satuan_id, satuan: satuan, QTY: qty, NOMINAL: nominal }).draw();
-        $("#nama_barang").val("");
+        $("#namabarang").val("");
         $("#satuan").val("");
-        $("#qty").val("");
+        $("#qtybeli").val("");
         $("#nominalbeli").val("");
+        $("#hargabeli").val("");
     }
     else if (act == "edit"){
         var id = $("#iddetailbeli").val();
@@ -634,6 +635,7 @@ $("#savedetailbeli").on("click", function(){
         tabelbeli.row(idx).data({ID: id, NAMA_BARANG: namabarang, SATUAN_ID: satuan_id, satuan: satuan, QTY: qty, NOMINAL: nominal }).draw();
         $("#modaldetailbeli").modal("hide");
     }
+    $("#namabarang").focus();
     count_total();
     $(this).prop("disabled", false);
 });

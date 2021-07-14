@@ -71,16 +71,15 @@
                     <thead>
                         <th>Opsi</th>
                         <th>Job Order</th>
-                        <th>No Dok</th>
                         <th>Tgl Job</th>
-                        <th>Customer</th>
                         <th>Tgl Tiba</th>
-                        <th>No Aju</th>
-                        <th>Nopen<br>Tgl Nopen</th>
-                        <th>Tgl SPPB</th>
-                        <th>Tot Biaya</th>
-                        <th>Tot Billing</th>
-                        <th>Tot Payment</th>
+                        <th>Ttl Modal</th>
+                        <th>Tot Beli</th>
+                        <th>Tot Jual</th>
+                        <th>Profit</th>
+                        <th>Tot Debet</th>
+                        <th>Tot Kredit</th>
+                        <th>Saldo</th>
                     </thead>
                     <tbody></tbody>
                 </table>
@@ -108,15 +107,16 @@
         			j = (j = i.length) > 3 ? j % 3 : 0;
         	return symbol + negative + (j ? i.substr(0, j) + thousand : "") + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + thousand) + (places ? decimal + Math.abs(number - i).toFixed(places).slice(2) : "");
         };
-        var columns = [{target: 0, data: null, orderable: false}, {target: 1, data: "JOB_ORDER"}, {target: 2, data: "NO_DOK"},
-        {target: 3, data: "TGL_JOB"}, {target: 4, data: "NAMACUSTOMER"},
-        {target: 5, data: "TGL_TIBA"},
-        {target: 6, data: "NOAJU"},
-        {target: 7, data: "NOPEN"},
-        {target: 8, data: "TGL_SPPB"},
-        {target: 9, data: "TOTAL_BIAYA"},
-        {target: 10, data: "TOTAL_BILLING"},
-        {target: 11, data: "TOTAL_PAYMENT"}
+        var columns = [{target: 0, data: null, orderable: false}, {target: 1, data: "JOB_ORDER"},
+        {target: 2, data: "TGL_JOB"},
+        {target: 3, data: "TGL_TIBA"},
+        {target: 4, data: "TOTAL_MODAL"},
+        {target: 5, data: "TOTAL_BELI"},
+        {target: 6, data: "TOTAL_JUAL"},
+        {target: 7, data: "PROFIT"},
+        {target: 8, data: "TOTAL_DEBET"},
+        {target: 9, data: "TOTAL_KREDIT"},
+        {target: 10, data: "SALDO"}
         ];
 
         var grid = $("#grid").DataTable({responsive: false,
@@ -140,10 +140,13 @@
             {
                 $(row).attr("id-transaksi", data[0]);
                 $('td:eq(0)', row).html('<a title="Edit" href="/transaksi/' + data.ID + '"><i class="fa fa-edit"></i></a>');
-                $("td:eq(7)", row).html(data.NOPEN + '<br>' + data.TGL_NOPEN);
-                $("td:eq(9)", row).html(parseFloat(data.TOTAL_BIAYA).formatMoney(2));
-                $("td:eq(10)", row).html(parseFloat(data.TOTAL_BILLING).formatMoney(2));
-                $("td:eq(11)", row).html(parseFloat(data.TOTAL_PAYMENT).formatMoney(2));
+                $("td:eq(4)", row).html(parseFloat(data.TOTAL_MODAL).formatMoney(2));
+                $("td:eq(5)", row).html(parseFloat(data.TOTAL_BELI).formatMoney(2));
+                $("td:eq(6)", row).html(parseFloat(data.TOTAL_JUAL).formatMoney(2));
+                $("td:eq(7)", row).html(parseFloat(data.PROFIT).formatMoney(2));
+                $("td:eq(8)", row).html(parseFloat(data.TOTAL_DEBET).formatMoney(2));
+                $("td:eq(9)", row).html(parseFloat(data.TOTAL_KREDIT).formatMoney(2));
+                $("td:eq(10)", row).html(parseFloat(data.SALDO).formatMoney(2));
             },
             columnDefs: [
                 { "orderable": false, "targets": 0 }
