@@ -91,7 +91,7 @@ class Transaksi extends Model
         $arrHeader = Array("JENIS_DOK" => trim($header["jenisdokumen"]) == "" ? NULL : $header["jenisdokumen"],
 						               "TGL_JOB" => trim($header["tgljob"]) == "" ? NULL : Date("Y-m-d", strtotime($header["tgljob"])),
                            "TGL_TIBA" => trim($header["tgltiba"]) == "" ? NULL : Date("Y-m-d", strtotime($header["tgltiba"])),
-                           "TOTAL_MODAL" => str_replace(",","", $header["totalmodal"])
+                           "TOTAL_MODAL" => trim($header["totalmodal"]) == "" ? NULL : str_replace(",","", $header["totalmodal"])
                           );
 
         if ($action == "insert"){
